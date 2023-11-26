@@ -22,3 +22,11 @@ func connectDB() (*gorm.DB, error) {
 
 	return db, nil
 }
+
+func migrateDB(db *gorm.DB) error {
+	if err := db.AutoMigrate(&ItemMaster{}, &LatestItem{}); err != nil {
+		return fmt.Errorf("db migration error: %w", err)
+	}
+
+	return nil
+}
