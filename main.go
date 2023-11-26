@@ -9,6 +9,8 @@ type Item struct {
 }
 
 func main() {
+	_, err := connectDB()
+
 	baseURL := "http://localhost:5001"
 	resp, err := fetch(baseURL)
 	if err != nil {
