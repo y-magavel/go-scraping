@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"time"
 
 	"gorm.io/gorm"
@@ -44,12 +43,12 @@ func main() {
 		panic(err)
 	}
 
-	indexItems, err := parseList(resp)
+	items, err := parseList(resp)
 	if err != nil {
 		panic(err)
 	}
 
-	for _, item := range indexItems {
-		fmt.Println(item)
+	if err = createLatestItems(items, db); err != nil {
+		panic(err)
 	}
 }
