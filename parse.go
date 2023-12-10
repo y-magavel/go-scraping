@@ -46,3 +46,15 @@ func parseList(resp *http.Response) ([]Item, error) {
 
 	return items, nil
 }
+
+func parseDetail(response *http.Response, item ItemMaster) (ItemMaster, error) {
+	body := response.Body
+	doc, err := goquery.NewDocumentFromReader(body)
+	if err != nil {
+		return ItemMaster{}, fmt.Errorf("get detail page document body error %w", err)
+	}
+
+	item.Description = doc.Find("table tr:nth-of-type(2) td:nth-of-type(2)").Text()
+
+	return item, nil
+}

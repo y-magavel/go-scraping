@@ -82,3 +82,22 @@ func updateItemMaster(db *gorm.DB) error {
 		return nil
 	})
 }
+
+func findItemMaster(db *gorm.DB) ([]ItemMaster, error) {
+	var items []ItemMaster
+	if err := db.Find(&items).Error; err != nil {
+		return nil, fmt.Errorf("select error: %w", err)
+	}
+
+	return items, nil
+}
+
+func createDetails(items []ItemMaster, db *gorm.DB) error {
+	for _, item := range items {
+		if err := db.Model(&item).Updates(ItemMaster{Description: item.Description}).Error; err != nil {
+			return fmt.Errorf("update item detail info error: %w", err)
+		}
+		fmt.Printf("Detail page is updated: %s\n", item.URL)
+	}
+	return nil
+}

@@ -20,10 +20,15 @@ type LatestItem struct {
 type ItemMaster struct {
 	gorm.Model
 	Item
+	Description string
 }
 
-func (ItemMaster) TableName() string {
+func (i ItemMaster) TableName() string {
 	return "item_master"
+}
+
+func (i ItemMaster) equals(target ItemMaster) bool {
+	return i.Description == target.Description
 }
 
 func main() {
@@ -53,6 +58,22 @@ func main() {
 	}
 
 	if err := updateItemMaster(db); err != nil {
+		panic(err)
+	}
+
+	var updateChkItems []ItemMaster
+	updateChkItems, err = findItemMaster(db)
+	if err != nil {
+		panic(err)
+	}
+
+	var updatedItems []ItemMaster
+	updatedItems, err = fetchDetails(updateChkItems)
+	if err != nil {
+		panic(err)
+	}
+
+	if err = createDetails(updatedItems, db); err != nil {
 		panic(err)
 	}
 }
