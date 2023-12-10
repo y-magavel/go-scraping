@@ -48,7 +48,11 @@ func main() {
 		panic(err)
 	}
 
-	if err = createLatestItems(items, db); err != nil {
+	if err := createLatestItems(items, db); err != nil {
+		panic(err)
+	}
+
+	if err := updateItemMaster(db); err != nil {
 		panic(err)
 	}
 }
