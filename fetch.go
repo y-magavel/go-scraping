@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"time"
 )
 
 func fetch(url string) (*http.Response, error) {
@@ -14,7 +15,7 @@ func fetch(url string) (*http.Response, error) {
 	return resp, nil
 }
 
-func fetchDetails(items []ItemMaster) ([]ItemMaster, error) {
+func fetchDetails(items []ItemMaster, downloadBasePath string) ([]ItemMaster, error) {
 	var updatedItems []ItemMaster
 
 	for _, item := range items {
@@ -23,7 +24,7 @@ func fetchDetails(items []ItemMaster) ([]ItemMaster, error) {
 			return nil, fmt.Errorf("fetch detail page body error: %w", err)
 		}
 
-		currentItem, err := parseDetail(response, item)
+		currentItem, err := parseDetail(response, item, downloadBasePath)
 		if err != nil {
 			return nil, fmt.Errorf("fetch detail page content error: %w", err)
 		}
@@ -34,4 +35,29 @@ func fetchDetails(items []ItemMaster) ([]ItemMaster, error) {
 	}
 
 	return updatedItems, nil
+}
+
+func checkFileUpdated(fileURL string, lastModified time.Time) (isUpdated bool, currentLastModified time.Time) {
+	getLastModified := func(fileURL string) (time.Time, error) {
+		res, err := http.Head(fileURL)
+		if err != nil {
+			return time.Time{}, fmt.Errorf("http head request error: %w", err)
+		}
+		lastModified, err := time.Parse("Mon, 02 Jan 2006 15:04:05 MST", res.Header.Get("Last-Modified"))
+		if err != nil {
+			return time.Time{}, fmt.Errorf("get last-modified attribute error: %w", err)
+		}
+		return lastModified, nil
+	}
+
+	currentLastModified, err := getLastModified(fileURL)
+	if err != nil {
+		return false, currentLastModified
+	}
+
+	if currentLastModified.After(lastModified) {
+		return true, currentLastModified
+	} else {
+		return false, lastModified
+	}
 }

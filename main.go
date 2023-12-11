@@ -1,6 +1,9 @@
 package main
 
 import (
+	"os"
+	"path/filepath"
+	"reflect"
 	"time"
 
 	"gorm.io/gorm"
@@ -20,7 +23,13 @@ type LatestItem struct {
 type ItemMaster struct {
 	gorm.Model
 	Item
-	Description string
+	Description         string
+	ImageURL            string
+	ImageLastModifiedAt time.Time
+	ImageDownloadPath   string
+	PDFURL              string
+	PDFLastModifiedAt   time.Time
+	PDFDownloadPath     string
 }
 
 func (i ItemMaster) TableName() string {
@@ -28,7 +37,15 @@ func (i ItemMaster) TableName() string {
 }
 
 func (i ItemMaster) equals(target ItemMaster) bool {
-	return i.Description == target.Description
+	return reflect.DeepEqual(i, target)
+}
+
+func (i ItemMaster) ImageFileName() string {
+	return filepath.Base(i.ImageURL)
+}
+
+func (i ItemMaster) PDFFileName() string {
+	return filepath.Base(i.PDFURL)
 }
 
 func main() {
@@ -68,7 +85,10 @@ func main() {
 	}
 
 	var updatedItems []ItemMaster
-	updatedItems, err = fetchDetails(updateChkItems)
+	currentDir, _ := os.Getwd()
+	downloadBasePath := filepath.Join(currentDir, "work", "downloadFiles")
+
+	updatedItems, err = fetchDetails(updateChkItems, downloadBasePath)
 	if err != nil {
 		panic(err)
 	}

@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -39,8 +40,13 @@ func updateItemMaster(db *gorm.DB) error {
 		}
 
 		var insertRecords []ItemMaster
+		initDate := time.Date(1900, 1, 1, 0, 0, 0, 0, time.Local)
 		for _, newItem := range newItems {
-			insertRecords = append(insertRecords, ItemMaster{Item: newItem.Item})
+			insertRecords = append(insertRecords, ItemMaster{
+				Item:                newItem.Item,
+				ImageLastModifiedAt: initDate,
+				PDFLastModifiedAt:   initDate,
+			})
 			fmt.Printf("Index item is created: %s\n", newItem.URL)
 		}
 		if err := tx.CreateInBatches(insertRecords, 100).Error; err != nil {
@@ -94,7 +100,15 @@ func findItemMaster(db *gorm.DB) ([]ItemMaster, error) {
 
 func createDetails(items []ItemMaster, db *gorm.DB) error {
 	for _, item := range items {
-		if err := db.Model(&item).Updates(ItemMaster{Description: item.Description}).Error; err != nil {
+		if err := db.Model(&item).Updates(ItemMaster{
+			Description:         item.Description,
+			ImageURL:            item.ImageURL,
+			ImageLastModifiedAt: item.ImageLastModifiedAt,
+			ImageDownloadPath:   item.ImageDownloadPath,
+			PDFURL:              item.PDFURL,
+			PDFLastModifiedAt:   item.PDFLastModifiedAt,
+			PDFDownloadPath:     item.PDFDownloadPath,
+		}).Error; err != nil {
 			return fmt.Errorf("update item detail info error: %w", err)
 		}
 		fmt.Printf("Detail page is updated: %s\n", item.URL)
