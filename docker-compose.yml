@@ -8,3 +8,33 @@ services:
       MYSQL_PASSWORD: password
     ports:
       - 3306:3306
+
+  metabase-db:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: metabase
+      MYSQL_USER: metabase-user
+      MYSQL_PASSWORD: password
+
+  # FIXME: このコンテナは、metabase-dbに接続するだけのコンテナで試行後すぐに終了する。
+  #        理由はわからないが、一度接続しないとmetabaseコンテナの起動に失敗する。
+  connection-test:
+    depends_on:
+      - metabase-db
+    image: mysql:8.0
+    command: ["bash", "-c", "sleep 5 && mysql -h metabase-db -u metabase-user -ppassword metabase"]
+
+  metabase:
+    image: metabase/metabase-head:latest-ubuntu # arm対応のため開発イメージを指定
+    depends_on:
+      - metabase-db
+    environment:
+      MB_DB_TYPE: mysql
+      MB_DB_DBNAME: metabase
+      MB_DB_PORT: 3306
+      MB_DB_USER: metabase-user
+      MB_DB_PASS: password
+      MB_DB_HOST: metabase-db
+    ports:
+      - 3000:3000
