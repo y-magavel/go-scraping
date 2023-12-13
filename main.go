@@ -19,6 +19,13 @@ type LatestItem struct {
 	CreatedAt time.Time
 }
 
+type HistoryItem struct {
+	ID        uint   `gorm:"primarykey"`
+	Name      string `gorm:"type:varchar(100);not null;"`
+	Price     int
+	CreatedAt time.Time
+}
+
 type ItemMaster struct {
 	gorm.Model
 	Item
