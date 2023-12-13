@@ -63,12 +63,7 @@ func main() {
 		panic(err)
 	}
 
-	resp, err := fetch(conf.BaseURL)
-	if err != nil {
-		panic(err)
-	}
-
-	items, err := parseList(resp)
+	items, err := fetchMultiPages(conf.BaseURL)
 	if err != nil {
 		panic(err)
 	}

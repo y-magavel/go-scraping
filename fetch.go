@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"net/url"
+	"strconv"
 	"time"
 )
 
@@ -60,4 +62,39 @@ func checkFileUpdated(fileURL string, lastModified time.Time) (isUpdated bool, c
 	} else {
 		return false, lastModified
 	}
+}
+
+func fetchMultiPages(baseURL string) (items []Item, err error) {
+	page := 1
+
+	existsPage := true
+	for existsPage == true {
+		u, err := url.Parse(baseURL)
+		if err != nil {
+			return nil, fmt.Errorf("parse url error: %w", err)
+		}
+
+		// クエリストリングの組み立て
+		// Query関数によりクエリストリングをMap型に変換したデータを取得
+		q := u.Query()
+		// pageキーの値を上書き設定
+		q.Set("page", strconv.Itoa(page))
+		// 加工したクエリストリングを再設定
+		u.RawQuery = q.Encode()
+		// 設定したページの一覧の取得とパース
+		response, _ := fetch(u.String())
+		l, err := parseList(response)
+		if err != nil {
+			return nil, fmt.Errorf("get list error at %d page: %w", page, err)
+		}
+		if len(l) == 0 {
+			fmt.Printf("Item is not found: %s\n", u.String())
+			existsPage = false
+		} else {
+			// 引数で与えられたItemのsliceに、各ページで取得したItemのsliceを追加
+			items = append(items, l...)
+			page++
+		}
+	}
+	return items, nil
 }
