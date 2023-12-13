@@ -1,7 +1,6 @@
 package main
 
 import (
-	"os"
 	"path/filepath"
 	"reflect"
 	"time"
@@ -49,7 +48,12 @@ func (i ItemMaster) PDFFileName() string {
 }
 
 func main() {
-	db, err := connectDB()
+	conf, err := loadConfig()
+	if err != nil {
+		panic(err)
+	}
+
+	db, err := connectDB(conf)
 	if err != nil {
 		panic(err)
 	}
@@ -59,8 +63,7 @@ func main() {
 		panic(err)
 	}
 
-	baseURL := "http://localhost:5001"
-	resp, err := fetch(baseURL)
+	resp, err := fetch(conf.BaseURL)
 	if err != nil {
 		panic(err)
 	}
@@ -85,10 +88,7 @@ func main() {
 	}
 
 	var updatedItems []ItemMaster
-	currentDir, _ := os.Getwd()
-	downloadBasePath := filepath.Join(currentDir, "work", "downloadFiles")
-
-	updatedItems, err = fetchDetails(updateChkItems, downloadBasePath)
+	updatedItems, err = fetchDetails(updateChkItems, conf.DownloadBasePath)
 	if err != nil {
 		panic(err)
 	}

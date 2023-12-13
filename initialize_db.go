@@ -7,12 +7,12 @@ import (
 	"gorm.io/gorm"
 )
 
-func connectDB() (*gorm.DB, error) {
-	dbHost := "localhost"
-	dbPort := "3306"
-	dbName := "go_scraping_dev"
-	dbUser := "go-scraping-user"
-	dbPassword := "password"
+func connectDB(conf *Config) (*gorm.DB, error) {
+	dbHost := conf.DB.Host
+	dbPort := conf.DB.Port
+	dbName := conf.DB.DbName
+	dbUser := conf.DB.User
+	dbPassword := conf.DB.Password
 
 	dsn := fmt.Sprintf("%s:%s@(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local", dbUser, dbPassword, dbHost, dbPort, dbName)
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
